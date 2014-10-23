@@ -1,32 +1,31 @@
-module: property-gragh
-   +--ro path-vector-available-service
-      +--ro meta
-      |  +--ro (dependent)
-      |  |  +--:(dependent)
-      |  |  |  +--ro vtags*
-      |  |  |     +--ro resource-id?   resource-id
-      |  |  |     +--ro tag?           string
-      |  |  +--:(independent)
-      |  |     +--ro vtag
-      |  |        +--ro resource-id?   resource-id
-      |  |        +--ro tag?           string
-      |  +--ro cost-type
-      |     +--ro cost-type-name?   string
-      |     +--ro cost-mode?        cost-mode
-      |     +--ro cost-metric?      cost-metric
-      |     +--ro description?      string
-      +--ro CostMapData* [src]
-      |  +--ro src         pid-name
-      |  +--ro DstCosts* [dst]
-      |     +--ro dst                 pid-name
-      |     +--ro cost?               alto-cost
-      |     +--ro path-vector-cost*   string
-      +--ro accepts?        media-type
-      +--ro capabilities
-      |  +--ro cost-type-names*   leafref
-      |  +--ro prop-types*        endpoint-property
-      +--ro uses*           resource-id
+module: property-graph
+   +--rw path-vector
+      +--rw pid?   pid-name
 rpcs:
+   +---x path-vector-service                     
+   |  +--ro input     
+   |  |  +--ro request?   string
+   |  +--ro output    
+   |     +--ro meta
+   |     |  +--ro (dependent)
+   |     |  |  +--:(dependent)
+   |     |  |  |  +--ro vtags*
+   |     |  |  |     +--ro resource-id?   resource-id
+   |     |  |  |     +--ro tag?           string
+   |     |  |  +--:(independent)
+   |     |  |     +--ro vtag
+   |     |  |        +--ro resource-id?   resource-id
+   |     |  |        +--ro tag?           string
+   |     |  +--ro cost-type
+   |     |     +--ro cost-type-name?   string
+   |     |     +--ro cost-mode?        cost-mode
+   |     |     +--ro cost-metric?      cost-metric
+   |     |     +--ro description?      string
+   |     +--ro CostMapData* [src]
+   |        +--ro src         leafref
+   |        +--ro DstCosts* [dst]
+   |           +--ro dst                 leafref
+   |           +--ro path-vector-cost*   string
    +---x network-element-property-map-service    
    |  +--ro input     
    |  |  +--ro request?   string
@@ -41,12 +40,11 @@ rpcs:
    |     |        +--ro vtag
    |     |           +--ro resource-id?   resource-id
    |     |           +--ro tag?           string
-   |     +--ro nep-map* [element]
-   |        +--ro element                     string
-   |        +--ro NetworkElementProperties
-   |           +--ro bw?     string
-   |           +--ro srlg*   string
-   +---x note-edge-service                       
+   |     +--ro nep-map*
+   |        +--ro element?   string
+   |        +--ro bw?        string
+   |        +--ro srlg*      string
+   +---x node-edge-service                       
       +--ro input     
       |  +--ro request?   string
       +--ro output    
@@ -61,21 +59,19 @@ rpcs:
          |           +--ro resource-id?   resource-id
          |           +--ro tag?           string
          +--ro topology-map
-            +--ro nodes* [node-name]
-            |  +--ro node-name          string
-            |  +--ro node-properties
-            |     +--ro type?   string
-            +--ro links* [link-name]
-               +--ro link-name          string
-               +--ro link-properties
-                  +--ro src?     string
-                  +--ro dst?     string
-                  +--ro type?    string
-                  +--ro costs
-                     +--ro cost-values*
-                        +--ro metric?          as:cost-metric
-                        +--ro (metric-type)?
-                           +--:(availbw)
-                           |  +--ro availbw-value?   decimal64
-                           +--:(srlg)
-                              +--ro srlg-value*      string
+            +--ro nodes*
+            |  +--ro node?   string
+            |  +--ro type?   string
+            +--ro links*
+               +--ro link?    string
+               +--ro src?     string
+               +--ro dst?     string
+               +--ro type?    string
+               +--ro costs
+                  +--ro cost-values*
+                     +--ro metric?          cost-metric
+                     +--ro (metric-type)?
+                        +--:(availbw)
+                        |  +--ro availbw-value?   decimal64
+                        +--:(srlg)
+                           +--ro srlg-value*      string

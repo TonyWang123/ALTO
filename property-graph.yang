@@ -1,4 +1,4 @@
-module property-gragh{
+module property-graph{
 	yang-version 1;
 	
 	namespace "urn:ietf:params:xml:ns:yang:property-gragh";
@@ -20,67 +20,128 @@ module property-gragh{
 		"This module defines a model for the property gragh 
 		based on draft-yang-alto-topology-03.";
 	
-	container path-vector-available-service {
-		config false;
-		uses as:cost-map{
-			augment CostMapData/DstCosts{
-				leaf-list path-vector-cost{
-					type string;
-				}
-			}
+	
+	typedef pid-name {
+		type string {
+		  length "1..64";
+		  pattern "[0-9a-zA-Z_\-:@\.]+";
 		}
 		description
-			"draft-yang-alto-topology-03 sec.4" + 
-			"modify the cost-mode in alto-service.yang" + 
-			"object {
-				cost-map.DstCosts.JSONValue -> JSONString<0,*>;
-				meta.cost-mode = path-vector;
-			} InfoResourcePVCostMap : InfoResourceCostMap;";
+		  "Name for the PID." +
+		  "RFC7285, Section 10.1. Note: the '.' separator MUST NOT be" +
+		  "used unless specifically indicated in RFC7285 or an extension" +
+		  "document.";
 	}
 	
-	
-	
-	rpc network-element-property-map-service{
-		input{
-			leaf request{
-				type string;
+	typedef cost-metric {
+		type union {
+		  type enumeration {
+			enum routingcost {
+			  value "0";
+			  description
+			  "Default metric. MUST support. RFC7285 Sec. 6.1.1.1.";
 			}
+			enum hopcount {
+			  value "1";
+			  description
+			  "Hopcount metric.";
+			}
+		  }
+		  type string {
+			pattern "[\w\-:\.]+";
+		  }
 		}
-		output{
-			container meta{
-				uses as:meta;
-			}
-			list nep-map{
-				leaf element{
-					type string;
-				}
-				key "element";
-				container NetworkElementProperties{
-					leaf bw{
-						type string;
-					}
-					leaf-list srlg{
-						type string;
-					}
-					description
-						"draft-yang-alto-topology-03 sec.5" +
-						"object-map {
-							JSONString bw;
-							JSONString srlg<0,*>;
-						} NetworkElementProperties;";
-				}
-				description
-						"draft-yang-alto-topology-03 sec.5" +
-						"object-map {
-							JSONString -> NetworkElementProperties; 
-						} NetworkElementMapData;";
-			}
+		description
+		  "Cost metric. 'priv:' reserved for Private Use.";
+	}
+
+	typedef cost-mode {
+		type enumeration {
+		  enum numerical {
+			value "0";
+			description
+			  "Numerical cost mode.";
+		  }
+		  enum ordinal {
+			value "1";
+			description
+			  "Ordinal cost mode.";
+		  }
+		  enum path-vector {
+			value "2";
+			description
+				"Path-vector cost mode.";
+		  }
 		}
+		description
+		  "Cost mode. MUST support at least one of numerical and ordinal";
+	}
+
+	grouping cost-type {
+		leaf cost-type-name {
+		  type string;
+		}
+		leaf cost-mode {
+		  type cost-mode;
+		  description
+			"Cost mode.";
+		}
+		leaf cost-metric {
+		  type cost-metric;
+		  description
+			"Cost metric.";
+		}
+		leaf description {
+		  type string;
+		  description
+			"Optional description field.";
+		}
+		description
+		  "Cost type. RFC7285 Sec. 10.7." +
+		  " object {
+			  CostMetric cost-metric;
+			  CostMode   cost-mode;
+			  [JSONString description;]
+			} CostType;";
+	}
+	
+	grouping cost{
+		leaf-list path-vector-cost{
+			type string;
+		}
+	}
+	
+	container path-vector{
+		leaf pid{
+			type pid-name;
+		}
+	}
+	
+	grouping NetworkElementProperties{
+		leaf bw{
+			type string;
+		}
+		leaf-list srlg{
+			type string;
+		}
+		description
+			"draft-yang-alto-topology-03 sec.5" +
+			"object-map {
+				JSONString bw;
+				JSONString srlg<0,*>;
+			} NetworkElementProperties;";
+	}
+	
+	grouping NetworkElementMapData{
+		leaf element{
+			type string;
+		}
+		uses NetworkElementProperties;
 	}
 	
 	grouping cost-value{
 		leaf metric{
-			type as:cost-metric;
+			type cost-metric;
 		}
 		choice metric-type{
 			case availbw{
@@ -141,9 +202,95 @@ module property-gragh{
 				...
 			} NodeProperties;";
 	}
-		
 	
-	rpc note-edge-service{
+	grouping NodeMapData{
+		leaf node{
+			type string;
+		}
+		uses node-properties;
+		
+		description
+			"draft-yang-alto-topology-03 sec.6" +
+			"object-map {
+				JSONString -> NodeProperties;
+			} NodeMapData;";
+	}
+
+	grouping LinkMapData{
+		leaf link{
+			type string;
+		}
+		uses link-properties;
+		
+		description
+			"draft-yang-alto-topology-03 sec.6" +
+			"object-map { 
+				JSONString -> LinkProperties;
+			 } LinkMapData;";
+	}
+
+	
+	rpc path-vector-service{
+		input{
+			leaf request{
+				type string;
+			}
+		}
+		output{
+			container meta{
+				uses as:meta;
+				container cost-type {
+					uses cost-type;
+					description
+					  "Cost type.";
+				}
+			}
+			list CostMapData{
+				leaf src{
+					type leafref{
+						path "/path-vector/pid";
+					}
+				}
+				key "src";
+				list DstCosts{
+					leaf dst{
+						type leafref{
+							path "/path-vector/pid";
+						}
+					}
+					key "dst";
+					uses cost;
+				}
+			}
+		}
+		description
+			"draft-yang-alto-topology-03 sec.4" + 
+			"object {
+				cost-map.DstCosts.JSONValue -> JSONString<0,*>;
+				meta.cost-mode = path-vector;
+			} InfoResourcePVCostMap : InfoResourceCostMap;";
+	}
+	
+	
+	
+	rpc network-element-property-map-service{
+		input{
+			leaf request{
+				type string;
+			}
+		}
+		output{
+			container meta{
+				uses as:meta;
+			}
+			list nep-map{
+				uses NetworkElementMapData;
+			}
+		}
+	}
+			
+	
+	rpc node-edge-service{
 		input{
 			leaf request{
 				type string;
@@ -155,32 +302,10 @@ module property-gragh{
 			}
 			container topology-map{
 				list nodes{
-					leaf node-name{
-						type string;
-					}
-					key "node-name";
-					container node-properties{
-						uses node-properties;
-					}
-					description
-						"draft-yang-alto-topology-03 sec.6" +
-						"object-map {
-							JSONString -> NodeProperties;
-						} NodeMapData;";
+					uses NodeMapData;
 				}
 				list links{
-					leaf link-name{
-						type string;
-					}
-					key "link-name";
-					container link-properties{
-						uses link-properties;
-					}
-					description
-						"draft-yang-alto-topology-03 sec.6" +
-						"object-map { 
-							JSONString -> LinkProperties;
-						 } LinkMapData;";
+					uses LinkMapData;
 				}
 			}
 		}
