@@ -1,0 +1,189 @@
+module property-gragh{
+	yang-version 1;
+	
+	namespace "urn:ietf:params:xml:ns:yang:property-gragh";
+	
+	prefix "pg";
+	
+	import ietf-inet-types{
+		prefix inet;
+	}
+	
+	import alto-service{
+		prefix as;
+	}
+	
+	organization "Not Defined";
+	contact "Not Defined";
+	
+	description 
+		"This module defines a model for the property gragh 
+		based on draft-yang-alto-topology-03.";
+	
+	container path-vector-available-service {
+		config false;
+		uses as:cost-map{
+			augment CostMapData/DstCosts{
+				leaf-list path-vector-cost{
+					type string;
+				}
+			}
+		}
+		description
+			"draft-yang-alto-topology-03 sec.4" + 
+			"modify the cost-mode in alto-service.yang" + 
+			"object {
+				cost-map.DstCosts.JSONValue -> JSONString<0,*>;
+				meta.cost-mode = path-vector;
+			} InfoResourcePVCostMap : InfoResourceCostMap;";
+	}
+	
+	
+	
+	rpc network-element-property-map-service{
+		input{
+			leaf request{
+				type string;
+			}
+		}
+		output{
+			container meta{
+				uses as:meta;
+			}
+			list nep-map{
+				leaf element{
+					type string;
+				}
+				key "element";
+				container NetworkElementProperties{
+					leaf bw{
+						type string;
+					}
+					leaf-list srlg{
+						type string;
+					}
+					description
+						"draft-yang-alto-topology-03 sec.5" +
+						"object-map {
+							JSONString bw;
+							JSONString srlg<0,*>;
+						} NetworkElementProperties;";
+				}
+				description
+						"draft-yang-alto-topology-03 sec.5" +
+						"object-map {
+							JSONString -> NetworkElementProperties; 
+						} NetworkElementMapData;";
+			}
+		}
+	}
+	
+	grouping cost-value{
+		leaf metric{
+			type as:cost-metric;
+		}
+		choice metric-type{
+			case availbw{
+				leaf availbw-value{
+					type decimal64{
+						fraction-digits 6;
+					}
+				}
+			}
+			case srlg{
+				leaf-list srlg-value{
+					type string;
+				}
+			}
+		}
+		description
+			"draft-yang-alto-topology-03 sec.6" +
+			"object {
+				CostMetric metric;
+				JSONValue value; // value type depends on metric type
+			} CostValue;";
+	}
+	
+	
+	grouping link-properties{
+		leaf src{
+			type string;
+		}
+		leaf dst{
+			type string;
+		}
+		leaf type{
+			type string;
+		}
+		container costs{
+			list cost-values{
+				uses cost-value;
+			}
+		}
+		description
+			"draft-yang-alto-topology-03 sec.6" +
+			"object {
+				JSONString src;
+				JSONString dst;
+				JSONString type;
+				CostValue costs<0,*>;
+			} LinkProperties;";
+	}
+	
+	grouping node-properties{
+		leaf type{
+			type string;
+		}
+		description
+			"draft-yang-alto-topology-03 sec.6" +
+			"object {
+				JSONString type;
+				...
+			} NodeProperties;";
+	}
+		
+	
+	rpc note-edge-service{
+		input{
+			leaf request{
+				type string;
+			}
+		}
+		output{
+			container meta{
+				uses as:meta;
+			}
+			container topology-map{
+				list nodes{
+					leaf node-name{
+						type string;
+					}
+					key "node-name";
+					container node-properties{
+						uses node-properties;
+					}
+					description
+						"draft-yang-alto-topology-03 sec.6" +
+						"object-map {
+							JSONString -> NodeProperties;
+						} NodeMapData;";
+				}
+				list links{
+					leaf link-name{
+						type string;
+					}
+					key "link-name";
+					container link-properties{
+						uses link-properties;
+					}
+					description
+						"draft-yang-alto-topology-03 sec.6" +
+						"object-map { 
+							JSONString -> LinkProperties;
+						 } LinkMapData;";
+				}
+			}
+		}
+	}
+			
+}
