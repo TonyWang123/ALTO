@@ -1,0 +1,63 @@
+1.network-map-service
+
+      POST /restconf/operations/alto-service:network-map-service   HTTP/1.1
+      Content-Type: application/yang.operation+json
+
+      {
+        "alto-service:input" : {
+          "uri" : "uri1"
+        }
+      }
+
+2.filtered-network-map-service
+
+      POST /restconf/operations/alto-service:filtered-network-map-service   HTTP/1.1
+      Content-Type: application/yang.operation+json
+
+      {
+        "alto-service:input" : {
+          "pids" : "pid1",
+          "address-types" : "ipv4"
+        }
+      }
+
+3.cost-map-service
+
+      POST /restconf/operations/alto-service:cost-map-service   HTTP/1.1
+      Content-Type: application/yang.operation+json
+
+      {
+        "alto-service:input" : {
+          "uri" : "uri1"
+        }
+      }
+
+4.filtered-cost-map-service
+
+      POST /restconf/operations/alto-service:filtered-cost-map-service   HTTP/1.1
+      Content-Type: application/yang.operation+json
+
+      {
+        "alto-service:input" : {
+          "cost-type" : {
+             "cost-mode" : "numerical",
+             "cost-metric" : "routingcost"
+          }
+          "pids" : {
+             "srcs" : "pid1",
+             "dsts" : "pid2"
+          }
+        }
+      }
+
+5.endpoint-property-service
+
+      POST /restconf/operations/alto-service:endpoint-property-service   HTTP/1.1
+      Content-Type: application/yang.operation+json
+
+      {
+        "alto-service:input" : {
+          "properties" : "my-default-networkmap.pid",
+          "endpoints" : "ipv4:192.0.2.34"
+        }
+      }
