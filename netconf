@@ -1,0 +1,89 @@
++--ro resources
+         +--ro network-maps* [resource-id]
+              +-- resource-id
+              +-- vtag
+              +-- map* [pid]
+         +--ro cost-maps* [resource-id]
+              +-- resource-id
+              +-- dependent-vtag
+              +-- cost-type
+              +-- map* [srcpid]
+                +--srcpid
+                +--dstCosts* [dstpid]
+                  +--dstpid
+                  +--cost
+         +--ro endpoint-property-map
+              +-- meta
+                +-- dependent-vtags*
+                  +-- resource-id
+                  +-- tag
+              +-- endpoint-properties* [endpoint]
+                +-- endpoint
+                +-- properties* [property-type]
+                  +-- property-type
+                  +-- property
+
+1.network-map-service
+
+     <rpc message-id="101"
+          xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <get-config>
+         <source>
+           <running/>
+         </source>
+         <filter type="xpath"
+                 select="/resources/network-maps[resource-id='rid1']"/>
+        </get-config>
+     </rpc>
+
+2.filtered-network-map-service
+
+     <rpc message-id="101"
+          xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <get-config>
+         <source>
+           <running/>
+         </source>
+         <filter type="xpath"
+                 select="/resources/network-maps[resource-id='rid1']/map[pid='pid1' or pid='pid2']"/>
+        </get-config>
+     </rpc>
+
+3.cost-map-service
+
+     <rpc message-id="101"
+          xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <get-config>
+         <source>
+           <running/>
+         </source>
+         <filter type="xpath"
+                 select="/resources/cost-maps[resource-id='rid1']"/>
+        </get-config>
+     </rpc>
+
+4.filtered-cost-map-service
+
+     <rpc message-id="101"
+          xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <get-config>
+         <source>
+           <running/>
+         </source>
+         <filter type="xpath"
+                 select="/resources/cost-maps[resource-id='rid1']/map[srcpid='pid1']/dstCost[dstpid='pid2']"/>
+        </get-config>
+     </rpc>
+
+5.endpoint-property-service
+
+     <rpc message-id="101"
+          xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <get-config>
+         <source>
+           <running/>
+         </source>
+         <filter type="xpath"
+                 select="/resources/endpoint-property-map/endpoint-properties[endpoint='ipv4:192.0.2.34']/properties[property-type='my-default-networkmap.pid']"/>
+        </get-config>
+     </rpc>
