@@ -32,9 +32,29 @@
            <running/>
          </source>
          <filter type="xpath"
-                 select="/resources/network-maps[resource-id='rid1']"/>
+                 select="/resources/network-maps[resource-id='netMap1']"/>
         </get-config>
      </rpc>
+     
+     <rpc-reply message-id="101"
+                xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <data>
+         <resources>
+           <network-maps>
+             <resource-id>netMap1</resource-id>
+             <vtag>v1</vtag>
+             <map>
+               <pid>pid1</pid>
+               <endpoint-address-group>
+                 <address-type>ipv4</address-type>
+                 <endpoint-prefix>192.0.2.0/24</endpoint-prefix>
+                 <endpoint-prefix>198.51.100.0/25</endpoint-prefix>
+               </endpoint-address-group>
+             </network-map>
+           </maps>
+         </resources>
+       </data>
+     </rpc-reply>     
 
 2.filtered-network-map-service
 
@@ -45,9 +65,35 @@
            <running/>
          </source>
          <filter type="xpath"
-                 select="/resources/network-maps[resource-id='rid1']/map[pid='pid1' or pid='pid2']"/>
+                 select="/resources/network-maps[resource-id='netMap1']/map[pid='pid1' or pid='pid2']"/>
         </get-config>
      </rpc>
+     
+     <rpc-reply message-id="101"
+                xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <data>
+         <resources>
+           <network-maps>
+             <resource-id>netMap1</resource-id>
+             <vtag>v1</vtag>
+             <network-map>
+               <pid>pid1</pid>
+               <endpoint-address-group>
+                 <address-type>ipv4</address-type>
+                 <endpoint-prefix>192.0.2.0/24</endpoint-prefix>
+                 <endpoint-prefix>198.51.100.0/25</endpoint-prefix>
+               </endpoint-address-group>
+               <pid>pid2</pid>
+               <endpoint-address-group>
+                 <address-type>ipv4</address-type>
+                 <endpoint-prefix>192.0.2.1/24</endpoint-prefix>
+                 <endpoint-prefix>198.51.100.1/25</endpoint-prefix>
+               </endpoint-address-group>
+             </network-map>
+           </network-maps>
+         </resources>
+       </data>
+     </rpc-reply>     
 
 3.cost-map-service
 
@@ -58,10 +104,44 @@
            <running/>
          </source>
          <filter type="xpath"
-                 select="/resources/cost-maps[resource-id='rid1']"/>
+                 select="/resources/cost-maps[resource-id='netMap1']"/>
         </get-config>
      </rpc>
 
+     <rpc-reply message-id="101"
+                xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <data>
+         <resources>
+           <cost-maps>
+             <resource-id>netMap1</resource-id>
+             <dependent-vtags>
+               <resource-id>my-default-network-map</resource-id>
+               <tag>75ed013b3cb58f896e839582504f622838ce670f</tag>
+             </dependent-vtags>
+             <cost-type>
+               <cost-mode>numerical</cost-mode>
+               <cost-metric>routingcost</cost-metric>
+             </cost-type>
+             <map>
+               <srcpid>pid1</srcpid>
+               <dstCosts>
+                 <dstpid>pid1</dstpid>
+                 <cost>0</cost>
+               </dstCosts>
+               <dstCosts>
+                 <dstpid>pid2</dstpid>
+                 <cost>1</cost>
+               </dstCosts>
+               <dstCosts>
+                 <dstpid>pid3</dstpid>
+                 <cost>2</cost>
+               </dstCosts>
+             </map>
+           </cost-maps>
+         </resources>
+       </data>
+     </rpc-reply>
+     
 4.filtered-cost-map-service
 
      <rpc message-id="101"
@@ -71,10 +151,42 @@
            <running/>
          </source>
          <filter type="xpath"
-                 select="/resources/cost-maps[resource-id='rid1']/map[srcpid='pid1']/dstCost[dstpid='pid2']"/>
+                 select="/resources/cost-maps[resource-id='netMap1']/map[srcpid='pid1' or srcpid='pid2']/dstCost[dstpid='pid3' or dstpid='pid4']/parent::node()"/>
         </get-config>
      </rpc>
 
+     <rpc-reply message-id="101"
+                xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <data>
+         <resources>
+           <cost-maps>
+             <map>
+               <srcpid>pid1</srcpid>
+               <dstCosts>
+                 <dstpid>pid3</dstpid>
+                 <cost>1</cost>
+               </dstCosts>
+               <srcpid>pid1</srcpid>
+               <dstCosts>
+                 <dstpid>pid4</dstpid>
+                 <cost>2</cost>
+               </dstCosts>
+               <srcpid>pid2</srcpid>
+               <dstCosts>
+                 <dstpid>pid3</dstpid>
+                 <cost>10</cost>
+               </dstCosts>
+               <srcpid>pid2</srcpid>
+               <dstCosts>
+                 <dstpid>pid4</dstpid>
+                 <cost>5</cost>
+               </dstCosts>
+             </map>
+           </cost-maps>
+         </resources>
+       </data>
+     </rpc-reply>
+     
 5.endpoint-property-service
 
      <rpc message-id="101"
@@ -87,3 +199,26 @@
                  select="/resources/endpoint-property-map/endpoint-properties[endpoint='ipv4:192.0.2.34']/properties[property-type='my-default-networkmap.pid']"/>
         </get-config>
      </rpc>
+
+     <rpc-reply message-id="101"
+                xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <data>
+         <resources>
+           <endpoint-property-map>
+             <endpoint-properties>
+               <endpoint>ipv4:192.0.2.34</endpoint>
+                 <properties>
+                   <property-type>my-default-network-map.pid</property-type>
+                   <property>PID1</property>
+                 </properties>
+             </endpoint-properties>
+           </endpoint-property-map>
+         </resources>
+       </data>
+     </rpc-reply>
+     
+     6.subtree vs xpath
+     
+     There are two shortages in subtree comparing to xpath:
+       1.It just work when clients want exact match like srcpid='pid1'. If there are some services in future for not exact match like cost<'10', it may not work.
+       2.It doesn't support xpath axes which can give flexibilities.
