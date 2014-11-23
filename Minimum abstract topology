@@ -1,0 +1,45 @@
+Minimum abstract topology
+
+Define the 'minimum': the least number of nodes (or links) to specify an abstract topology that could give enough 
+
+information to clients' path selecting function for improving efficiency.
+
+h1---s1---s2---h3
+      \   /
+       \ /
+h2-----s3
+
+For example, if we merge s1, s2 and s3 into one node n1, clients don't have enough information to select path and it could 
+
+lead unefficiency if two flows (h1->h3 and h2->h3) both choose path s1s2.
+
+From this example, we can defer that the topology doesn't enough information if there exists abstract nodes (and don't 
+
+provide details of underlaying network) with multiple links connecting to, and there are different flows using these nodes. 
+
+If there is only one flow, it can choose any path or all path with weight and doesn't cause problem.
+
+So let's analyze which patterns give the minimum abstract topology (only consider one flow):
+
+1. one path just be represented with two endpoint nodes and one link,
+
+h1---s1---...---sk---h2 --> h1---h2 (in this case, we also add an attribute in link to specify that is abstract)
+
+2. multicast (1->m) can be represented with one node and m endpoint nodes and m links,
+
+h1---s1---h2
+      \   ..
+       \
+         hm
+
+If considering multiple flows share the same topology,
+
+sni denotes the node set flow i pass through,
+sli denotes the link set flow i pass through,
+sn'=(sn1&sn1)|(sn1&sn2)|...|(snm&snm), denotes the node set that are passed by more than one flow,
+sl'=(sl1&sl1)|(sl1&sl2)|...|(slm&slm), denotes the link set that are passed by more than one flow,
+
+if sn' or sl' contains abstract node or link, the information is not enough, then we give more details of the abstract node 
+
+and link in sn' and sl';
+else, we apply the pattern for considering only one flow and gets minimum abstract topology.
