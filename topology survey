@@ -1,0 +1,125 @@
+1.ACTN (http://datatracker.ietf.org/doc/draft-ceccarelli-actn-framework/?include_text=1)
+
+Physical Network Controller -- manages the forwarding state of physical network
+Virtual Network Controller -- path computation on global network-wide topology (multi-domain)
+Customer Network Controller -- directly interfaces applications and maintains customer network
+Application -- customer applications can create, replace and modify virtual network resources (topology, bandwidth or cpu)
+
+Customers (applications) with different needs have customer networks with different granularity level. The more granular 
+
+the abstraction topology is, the more control is given to the Customer Network Controller.
+
+Virtual Network is defined by end-points and constraints, which means customers make requests to create virtual network by 
+
+providing end-points and constraints, such as latency, bandwidth, diversity. Virtual network can be represented by path 
+
+vector (tunnel) and node/links (graph) which has not defined yet.
+
+An interesting part in the doc is path constraints. To improve overall efficiency and accept requests that not be available 
+
+for current assignments, established paths are allowed to change.
+
+
+
+2.SUPA (http://datatracker.ietf.org/doc/draft-contreras-supa-yang-network-topo/?include_text=1)
+
+topology  -- layer (L0, L1, L2 or L3)
+extnode/node -- parentTopoID (only one) --> topology
+terminationpoint -- nodeId --> node
+extterminationpoint -- nodeId --> node
+                    -- parentTopoID --> topology
+extlink/link -- sourceNodeId/destinationNodeId --> node
+             -- sourceTpId/destinationTpId --> terminationpoint
+             -- parentTopoID -->topology
+             -- linkTeAttrCfg
+             -- linkAttrRun
+
+The general attributes in SUPA include ID, name, type (physical or virtual), status (up or down). Ext means the outside 
+
+nodes, terminationpints or links which are not nuder the control of current controller.
+
+
+
+3.https://tools.ietf.org/html/draft-liu-netmod-yang-abstract-topo-00
+
+topology -- topology-id
+node -- node-id
+     -- termination-point -- tp-id
+                          -- abstract-attributes -- node-ref --> node
+     -- supporting-node -->node
+     -- igp-node-attributes -- abstract-node-attributes -- is-virtual
+                                                        -- underlay-topology -->topology
+link -- link-id
+     -- source -- source-node -->node
+               -- source-tp -->termination-point
+     -- destination -- destination-node -->node
+                    -- destination-tp -->termination-point
+     -- supporting-link -->link
+     -- igp-link-attributes -- abstract-link-attributes -- is-virtual
+                                                        -- advertising-node-src -->node
+                                                        -- advertising-node-des -->node
+
+This abstract topology model use node-ref to imply the underlay node of termination-point, and advertising-node-src/des to 
+
+advertise the link end points.
+
+
+
+4.https://tools.ietf.org/html/draft-clemm-i2rs-yang-network-topo-00
+
+This model is very like the third one (the third one extends this model). The differences:
+
+this model doesn't define abstract-attributes, hence, doesn't have node-ref in termination-point.
+
+   module: network-topology
+      +--rw network-topology
+         +--rw topology [topology-id]
+            +--rw topology-id          topology-id
+            +--ro server-provided?     boolean
+            +--rw topology-types
+            +--rw underlay-topology [topology-ref]
+            |  +--rw topology-ref    topology-ref
+            +--rw node [node-id]
+            |  +--rw node-id              node-id
+            |  +--rw supporting-node [node-ref]
+            |  |  +--rw node-ref    node-ref
+            |  +--rw termination-point [tp-id]
+            |     +--rw tp-id     tp-id
+            |     +--ro tp-ref*   tp-ref
+            +--rw link [link-id]
+               +--rw link-id            link-id
+               +--rw source
+               |  +--rw source-node    node-ref
+               |  +--rw source-tp?     tp-ref
+               +--rw destination
+               |  +--rw dest-node    node-ref
+               |  +--rw dest-tp?     tp-ref
+               +--rw supporting-link [link-ref]
+                  +--rw link-ref    link-ref
+
+
+
+5.http://tools.ietf.org/id/draft-medved-i2rs-topology-im-01.txt
+
+This model is very like the fourth one.The difference:
+
+this model adds extension in topology, node, termination-point and link, which imply such as the OSPF/IS-IS topology is 
+
+extended from igp topology. The fourth one has extension idea in topology, but doesn't define the extension in data 
+
+structure. This model define extension in the same level as supporting-nodes and underlay-topologies.
+
+
+
+6.odl (https://jenkins.opendaylight.org/controller/job/controlller-merge-hydrogen-
+
+stable/lastSuccessfulBuild/artifact/opendaylight/northbound/topology/target/site/wsdocs/index.html)
+
+topology -- edgeProperties
+edgeProperties -- edge -- tailNodeConnector -- node
+                       -- headNodeConnector -- node
+               -- properties
+nodeConnector -- node
+              -- type
+              -- id
+userLinks(user can define by PUT) -- srcNodeConnector/dstNodeConnector --> nodeConnector
