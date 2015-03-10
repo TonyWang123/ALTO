@@ -1,0 +1,14 @@
+Choose which platform to implement our design, opendaylight or onos?
+
+According to some reasons bellow, we decide to use onos:
+
+1.The code of onos is cleaner than opendaylight;
+2.Huawei is the sponsor of onos;
+3.The distributed architecture with clear specification of onos will be more suitable for our design.
+
+Tasks:
+
+1.How to implement in onos?
+2.Make slides to analyze the computation of f_local and f_aggregation.
+3.Is there a better method to reduce the workload of f_local? (currently, we use T_aggregation)
+4.How to split T_i?
